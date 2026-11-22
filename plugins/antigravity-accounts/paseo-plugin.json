@@ -2,7 +2,7 @@
   "id": "antigravity-accounts",
   "name": "Google Antigravity Accounts",
   "description": "Manage multiple Google Antigravity AI Pro accounts and switch seamlessly with live quota monitoring.",
-  "icon": "icon.png",
+  "icon": "assets/icon.png",
   "requirements": {
     "paseo": ">=0.17.0"
   }
