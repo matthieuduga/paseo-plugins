@@ -14,7 +14,10 @@ const execFileAsync = util.promisify(execFile);
 
 // Common paths inside the Paseo runtime environment
 const HOME = process.env.HOME || "/home/paseo";
-const TOKEN_FILE = path.join(HOME, ".gemini", "antigravity-cli", "antigravity-oauth-token");
+const TOKEN_PATHS = [
+  path.join(HOME, ".gemini", "antigravity-acp", "antigravity-oauth-token"),
+  path.join(HOME, ".gemini", "antigravity-cli", "antigravity-oauth-token"),
+];
 const VAULT_FILE = path.join(HOME, ".paseo", "antigravity-vault.json");
 const BIN_PATH = `/home/paseo/.local/bin:/home/paseo/.dotnet:/usr/local/bin:${process.env.PATH || ""}`;
 
@@ -83,26 +86,47 @@ function writeVault(data: VaultData): void {
 }
 
 /**
- * Read the active token currently loaded in ~/.gemini/antigravity-cli/.
+ * Read the active token currently loaded in ~/.gemini/.
+ * Checks both antigravity-acp and antigravity-cli locations.
  */
 function readCurrentToken(): string | null {
-  try {
-    if (fs.existsSync(TOKEN_FILE)) {
-      return fs.readFileSync(TOKEN_FILE, "utf-8").trim();
-    }
-  } catch {}
+  for (const tokenPath of TOKEN_PATHS) {
+    try {
+      if (fs.existsSync(tokenPath)) {
+        const content = fs.readFileSync(tokenPath, "utf-8").trim();
+        if (content) return content;
+      }
+    } catch {}
+  }
   return null;
 }
 
 /**
- * Atomically write the active token to ~/.gemini/antigravity-cli/.
+ * Atomically write the active token to ~/.gemini/.
+ * Writes to existing token directories or creates the default path.
  */
 function writeCurrentToken(token: string): void {
-  const dir = path.dirname(TOKEN_FILE);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
-  const tmp = path.join(dir, `.token.${crypto.randomBytes(6).toString("hex")}.tmp`);
-  fs.writeFileSync(tmp, token.trim() + "\n", { mode: 0o600 });
-  fs.renameSync(tmp, TOKEN_FILE);
+  const writtenPaths = new Set<string>();
+
+  for (const tokenPath of TOKEN_PATHS) {
+    const dir = path.dirname(tokenPath);
+    if (fs.existsSync(dir)) {
+      const tmp = path.join(dir, `.token.${crypto.randomBytes(6).toString("hex")}.tmp`);
+      fs.writeFileSync(tmp, token.trim() + "\n", { mode: 0o600 });
+      fs.renameSync(tmp, tokenPath);
+      writtenPaths.add(tokenPath);
+    }
+  }
+
+  // If none of the directories existed yet, create the primary directory and write
+  if (writtenPaths.size === 0) {
+    const primary = TOKEN_PATHS[0];
+    const dir = path.dirname(primary);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+    const tmp = path.join(dir, `.token.${crypto.randomBytes(6).toString("hex")}.tmp`);
+    fs.writeFileSync(tmp, token.trim() + "\n", { mode: 0o600 });
+    fs.renameSync(tmp, primary);
+  }
 }
 
 /**
@@ -175,12 +199,28 @@ export async function getStatus(): Promise<VaultStatus> {
   let activeEmail: string | null = null;
 
   if (currentToken) {
-    const match = vault.accounts.find((a) => a.token === currentToken);
+    const currentEmail = extractAccountEmail(currentToken);
+    activeEmail = currentEmail;
+
+    // 1. Direct match by exact token string
+    let match = vault.accounts.find((a) => a.token === currentToken);
+
+    // 2. Fallback match by email (when access_token has been automatically refreshed by Google)
+    if (!match && currentEmail && currentEmail !== "google-user@antigravity") {
+      match = vault.accounts.find(
+        (a) => a.email.toLowerCase() === currentEmail.toLowerCase(),
+      );
+      if (match) {
+        // Sync refreshed token to vault
+        match.token = currentToken;
+        match.updatedAt = Date.now();
+        writeVault(vault);
+      }
+    }
+
     if (match) {
       activeAccountId = match.id;
       activeEmail = match.email;
-    } else {
-      activeEmail = extractAccountEmail(currentToken);
     }
   }
 
@@ -441,12 +481,10 @@ export async function submitAuthCode({
     throw new Error("Authorization code cannot be empty.");
   }
 
-  const tokenPath = path.join(
-    session.tempDir,
-    ".gemini",
-    "antigravity-cli",
-    "antigravity-oauth-token",
-  );
+  const candidateTokenPaths = [
+    path.join(session.tempDir, ".gemini", "antigravity-acp", "antigravity-oauth-token"),
+    path.join(session.tempDir, ".gemini", "antigravity-cli", "antigravity-oauth-token"),
+  ];
 
   return new Promise<VaultStatus>((resolve, reject) => {
     let finished = false;
@@ -464,10 +502,12 @@ export async function submitAuthCode({
     const pollInterval = setInterval(async () => {
       if (finished) return;
 
+      const foundPath = candidateTokenPaths.find((p) => fs.existsSync(p));
+
       // Check if token file exists and is populated
-      if (fs.existsSync(tokenPath)) {
+      if (foundPath) {
         try {
-          const rawToken = fs.readFileSync(tokenPath, "utf-8").trim();
+          const rawToken = fs.readFileSync(foundPath, "utf-8").trim();
           if (rawToken && rawToken.startsWith("{")) {
             finished = true;
             clearInterval(pollInterval);
@@ -526,7 +566,7 @@ export async function submitAuthCode({
 
     // Watch for process exit errors
     session.child.on("close", (code) => {
-      if (!finished && !fs.existsSync(tokenPath)) {
+      if (!finished && !candidateTokenPaths.some((p) => fs.existsSync(p))) {
         finished = true;
         clearInterval(pollInterval);
         cleanSession(sessionId);

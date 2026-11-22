@@ -381,8 +381,9 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
         borderColor: theme.colors.border,
       },
       activeCard: {
-        borderColor: theme.colors.accent,
-        borderWidth: 1.5,
+        borderColor: "#10b981",
+        borderWidth: 2,
+        backgroundColor: theme.colors.surface1,
       },
       cardHeader: {
         flexDirection: "row" as const,
@@ -400,11 +401,42 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
         paddingHorizontal: 8,
         paddingVertical: 3,
         borderRadius: 6,
+        flexDirection: "row" as const,
+        alignItems: "center" as const,
+        gap: 4,
       },
       badgeActiveText: {
         color: "#ffffff",
         fontSize: 11,
         fontWeight: "bold" as const,
+      },
+      activeBanner: {
+        flexDirection: "row" as const,
+        alignItems: "center" as const,
+        backgroundColor: "#10b98115",
+        borderColor: "#10b98144",
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 9,
+        marginBottom: 16,
+        gap: 8,
+      },
+      activeDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: "#10b981",
+      },
+      activeBannerLabel: {
+        fontSize: 12,
+        color: theme.colors.foregroundMuted,
+        fontWeight: "500" as const,
+      },
+      activeBannerEmail: {
+        fontSize: 12,
+        fontWeight: "bold" as const,
+        color: theme.colors.foreground,
       },
       quotaContainer: {
         backgroundColor: theme.colors.surface0,
@@ -487,6 +519,17 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
       },
       activateBtnText: {
         color: theme.colors.accentForeground,
+        fontWeight: "600" as const,
+        fontSize: 12,
+      },
+      activeBtnDisabled: {
+        backgroundColor: theme.colors.surface2,
+        borderColor: "#10b98166",
+        borderWidth: 1,
+        opacity: 0.95,
+      },
+      activeBtnDisabledText: {
+        color: "#10b981",
         fontWeight: "600" as const,
         fontSize: 12,
       },
@@ -713,6 +756,15 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
         </View>
       )}
 
+      {/* Active Account Banner */}
+      {status?.activeEmail && (
+        <View style={styles.activeBanner}>
+          <View style={styles.activeDot} />
+          <Text style={styles.activeBannerLabel}>{t("activeAccountBanner")}</Text>
+          <Text style={styles.activeBannerEmail}>{status.activeEmail}</Text>
+        </View>
+      )}
+
       {/* Accounts List */}
       {status?.accounts.length === 0 ? (
         <View style={styles.card}>
@@ -722,7 +774,10 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
         </View>
       ) : (
         status?.accounts.map((acc: AntigravityAccount) => {
-          const isActive = acc.id === status.activeAccountId;
+          const isActive =
+            acc.id === status.activeAccountId ||
+            (Boolean(status.activeEmail) &&
+              acc.email.toLowerCase() === status.activeEmail?.toLowerCase());
           const isBusy =
             busyAction === `select-${acc.id}` ||
             busyAction === `quota-${acc.id}` ||
@@ -738,7 +793,7 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
                 </View>
                 {isActive && (
                   <View style={styles.badgeActive}>
-                    <Text style={styles.badgeActiveText}>{t("active")}</Text>
+                    <Text style={styles.badgeActiveText}>● {t("active")}</Text>
                   </View>
                 )}
               </View>
@@ -806,19 +861,27 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
 
               {/* Card Footer Actions */}
               <View style={styles.cardFooter}>
-                {!isActive && (
-                  <Pressable
-                    style={styles.activateBtn}
-                    onPress={() => handleSelect(acc.id)}
-                    disabled={isBusy}
-                  >
-                    {busyAction === `select-${acc.id}` ? (
-                      <ActivityIndicator size="small" color={theme.colors.accentForeground} />
-                    ) : (
-                      <Text style={styles.activateBtnText}>{t("switchAccount")}</Text>
-                    )}
-                  </Pressable>
-                )}
+                <Pressable
+                  style={[
+                    styles.activateBtn,
+                    isActive && styles.activeBtnDisabled,
+                  ]}
+                  onPress={() => !isActive && handleSelect(acc.id)}
+                  disabled={isActive || isBusy}
+                >
+                  {busyAction === `select-${acc.id}` ? (
+                    <ActivityIndicator size="small" color={theme.colors.accentForeground} />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.activateBtnText,
+                        isActive && styles.activeBtnDisabledText,
+                      ]}
+                    >
+                      {isActive ? t("activeAccountBtn") : t("switchAccount")}
+                    </Text>
+                  )}
+                </Pressable>
 
                 <Pressable
                   style={styles.actionBtn}

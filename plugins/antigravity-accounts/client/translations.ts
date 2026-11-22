@@ -39,6 +39,8 @@ const en = {
   accountRemoved: "Account removed from vault",
   window5h: "5h Window",
   weekly: "Weekly",
+  activeAccountBtn: "✓ Active Account",
+  activeAccountBanner: "Currently Active Account:",
 } as const;
 
 export const translations = defineTranslations({
@@ -83,6 +85,8 @@ export const translations = defineTranslations({
       accountRemoved: "Compte supprimé du coffre",
       window5h: "Fenêtre 5h",
       weekly: "Hebdo",
+      activeAccountBtn: "✓ Compte actif",
+      activeAccountBanner: "Compte actuellement utilisé :",
     },
     es: {
       screenTitle: "Cuentas de Google Antigravity",
@@ -123,6 +127,8 @@ export const translations = defineTranslations({
       accountRemoved: "Cuenta eliminada de la bóveda",
       window5h: "Ventana 5h",
       weekly: "Semanal",
+      activeAccountBtn: "✓ Cuenta activa",
+      activeAccountBanner: "Cuenta actualmente en uso:",
     },
     ar: {
       screenTitle: "حسابات Google Antigravity",
@@ -163,6 +169,8 @@ export const translations = defineTranslations({
       accountRemoved: "تمت إزالة الحساب من الخزينة",
       window5h: "نافذة 5 ساعات",
       weekly: "أسبوعي",
+      activeAccountBtn: "✓ الحساب النشط",
+      activeAccountBanner: "الحساب المستخدم حاليًا:",
     },
     ja: {
       screenTitle: "Google Antigravity アカウント",
@@ -203,6 +211,8 @@ export const translations = defineTranslations({
       accountRemoved: "アカウントを削除しました",
       window5h: "5時間枠",
       weekly: "週間",
+      activeAccountBtn: "✓ アクティブなアカウント",
+      activeAccountBanner: "現在使用中のアカウント:",
     },
     ko: {
       screenTitle: "Google Antigravity 계정",
@@ -243,6 +253,8 @@ export const translations = defineTranslations({
       accountRemoved: "보관함에서 계정이 삭제되었습니다",
       window5h: "5시간 한도",
       weekly: "주간",
+      activeAccountBtn: "✓ 활성 계정",
+      activeAccountBanner: "현재 사용 중인 계정:",
     },
     "pt-BR": {
       screenTitle: "Contas Google Antigravity",
@@ -283,6 +295,8 @@ export const translations = defineTranslations({
       accountRemoved: "Conta removida do cofre",
       window5h: "Janela de 5h",
       weekly: "Semanal",
+      activeAccountBtn: "✓ Conta ativa",
+      activeAccountBanner: "Conta atualmente em uso:",
     },
     pt: {
       screenTitle: "Contas Google Antigravity",
@@ -323,6 +337,8 @@ export const translations = defineTranslations({
       accountRemoved: "Conta removida do cofre",
       window5h: "Janela de 5h",
       weekly: "Semanal",
+      activeAccountBtn: "✓ Conta ativa",
+      activeAccountBanner: "Conta atualmente em uso:",
     },
     ru: {
       screenTitle: "Аккаунты Google Antigravity",
@@ -363,6 +379,8 @@ export const translations = defineTranslations({
       accountRemoved: "Аккаунт удален из хранилища",
       window5h: "Окно 5 ч",
       weekly: "Неделя",
+      activeAccountBtn: "✓ Активный аккаунт",
+      activeAccountBanner: "Текущий используемый аккаунт:",
     },
     "zh-CN": {
       screenTitle: "Google Antigravity 账户",
@@ -403,6 +421,8 @@ export const translations = defineTranslations({
       accountRemoved: "账户已从保管库移除",
       window5h: "5小时窗口",
       weekly: "每周",
+      activeAccountBtn: "✓ 当前活跃账户",
+      activeAccountBanner: "当前正在使用的账户:",
     },
     zh: {
       screenTitle: "Google Antigravity 账户",
@@ -443,6 +463,8 @@ export const translations = defineTranslations({
       accountRemoved: "账户已从保管库移除",
       window5h: "5小时窗口",
       weekly: "每周",
+      activeAccountBtn: "✓ 当前活跃账户",
+      activeAccountBanner: "当前正在使用的账户:",
     },
   },
 });
