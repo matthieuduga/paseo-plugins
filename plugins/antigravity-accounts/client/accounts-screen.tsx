@@ -13,6 +13,7 @@ import {
   ExternalLink,
   copyText,
   useToast,
+  Icon,
 } from "@getpaseo/plugin/client/ui";
 import {
   listAccountsRpc,
@@ -27,6 +28,7 @@ import {
   type QuotaEntry,
 } from "../shared/types";
 import { translations } from "./translations";
+import { antigravityIconSvg } from "./icons";
 
 type WizardStep = "idle" | "generating" | "awaiting_code" | "submitting";
 
@@ -234,11 +236,16 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
       header: {
         marginBottom: 16,
       },
+      headerTitleRow: {
+        flexDirection: "row" as const,
+        alignItems: "center" as const,
+        gap: 10,
+        marginBottom: 4,
+      },
       title: {
         fontSize: layout.compact ? 20 : 24,
         fontWeight: "bold" as const,
         color: theme.colors.foreground,
-        marginBottom: 4,
       },
       subtitle: {
         fontSize: 13,
@@ -390,6 +397,22 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
         justifyContent: "space-between" as const,
         alignItems: "center" as const,
         marginBottom: 12,
+      },
+      accountEmailRow: {
+        flexDirection: "row" as const,
+        alignItems: "center" as const,
+        gap: 10,
+      },
+      accountIconWrapper: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        backgroundColor: theme.colors.surface2,
+        alignItems: "center" as const,
+        justifyContent: "center" as const,
+      },
+      activeAccountIconWrapper: {
+        backgroundColor: "#10b98122",
       },
       emailText: {
         fontSize: 15,
@@ -590,7 +613,10 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>{t("screenTitle")}</Text>
+        <View style={styles.headerTitleRow}>
+          <Icon icon={{ svg: antigravityIconSvg }} size={26} color={theme.colors.accent} />
+          <Text style={styles.title}>{t("screenTitle")}</Text>
+        </View>
         <Text style={styles.subtitle}>{t("subtitle")}</Text>
       </View>
 
@@ -759,7 +785,7 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
       {/* Active Account Banner */}
       {status?.activeEmail && (
         <View style={styles.activeBanner}>
-          <View style={styles.activeDot} />
+          <Icon icon={{ svg: antigravityIconSvg }} size={16} color="#10b981" />
           <Text style={styles.activeBannerLabel}>{t("activeAccountBanner")}</Text>
           <Text style={styles.activeBannerEmail}>{status.activeEmail}</Text>
         </View>
@@ -787,9 +813,18 @@ export function AccountsScreen({ theme, layout }: PluginScreenProps) {
             <View key={acc.id} style={[styles.card, isActive && styles.activeCard]}>
               {/* Account Header */}
               <View style={styles.cardHeader}>
-                <View>
-                  <Text style={styles.emailText}>{acc.email}</Text>
-                  {acc.name && <Text style={styles.subtitle}>{acc.name}</Text>}
+                <View style={styles.accountEmailRow}>
+                  <View style={[styles.accountIconWrapper, isActive && styles.activeAccountIconWrapper]}>
+                    <Icon
+                      icon={{ svg: antigravityIconSvg }}
+                      size={18}
+                      color={isActive ? "#10b981" : theme.colors.foregroundMuted}
+                    />
+                  </View>
+                  <View>
+                    <Text style={styles.emailText}>{acc.email}</Text>
+                    {acc.name && <Text style={styles.subtitle}>{acc.name}</Text>}
+                  </View>
                 </View>
                 {isActive && (
                   <View style={styles.badgeActive}>

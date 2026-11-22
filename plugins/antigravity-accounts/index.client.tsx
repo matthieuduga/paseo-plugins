@@ -3,11 +3,12 @@ import type { PluginClientContext, PluginSidebarItemProps } from "@getpaseo/plug
 import { SidebarRow } from "@getpaseo/plugin/client/ui";
 import { AccountsScreen } from "./client/accounts-screen";
 import { translations } from "./client/translations";
+import { antigravityIconSvg } from "./client/icons";
 
 function AccountsSidebarItem({ currentScreen, openScreen }: PluginSidebarItemProps) {
   return (
     <SidebarRow
-      icon="Users"
+      icon={{ svg: antigravityIconSvg }}
       active={currentScreen?.screenId === "antigravity-accounts"}
       onPress={() => openScreen({ screenId: "antigravity-accounts" })}
     />
@@ -30,7 +31,7 @@ export default function contribute(client: PluginClientContext) {
   client.addCommandCenterItem({
     id: "cmd-switch-antigravity",
     title: translations.message("commandCenterTitle"),
-    icon: "Users",
+    icon: { svg: antigravityIconSvg },
     context: "global",
     onSelect({ openScreen }) {
       openScreen({ screenId: "antigravity-accounts" });
