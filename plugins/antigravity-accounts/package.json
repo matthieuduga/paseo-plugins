@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "files": [
     "paseo-plugin.json",
+    "icon.png",
     "icon.svg",
     "index.client.tsx",
     "index.server.ts",
