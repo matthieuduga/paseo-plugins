@@ -28,6 +28,62 @@ import {
 } from "../shared/types";
 import { translations } from "./translations";
 
+/**
+ * Robust clipboard copy helper for Paseo's webview/Electron environment.
+ * Executes document.execCommand('copy') synchronously within the user event loop,
+ * with fallbacks to navigator.clipboard and Paseo's copyText.
+ */
+async function copyToClipboard(text: string): Promise<boolean> {
+  // Strategy 1: Hidden textarea with document.execCommand('copy')
+  // Runs synchronously inside the user gesture event handler; succeeds even if document.hasFocus() is false in webviews
+  if (typeof document !== "undefined") {
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.top = "-9999px";
+      textarea.style.left = "-9999px";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+      const success = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      if (success) {
+        return true;
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  // Strategy 2: Modern Navigator Clipboard API
+  if (
+    typeof navigator !== "undefined" &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === "function"
+  ) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fallback
+    }
+  }
+
+  // Strategy 3: Paseo built-in copyText
+  try {
+    await copyText(text);
+    return true;
+  } catch {
+    // Failed
+  }
+
+  return false;
+}
+
 export function TunnelsPanel({
   theme,
   layout,
@@ -52,6 +108,7 @@ export function TunnelsPanel({
   const [tokenInput, setTokenInput] = useState<string>("");
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
   const [showInspector, setShowInspector] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
 
   // Status Query (Polled every 2.5s if active or starting)
   const { data: statusData } = useQuery({
@@ -141,14 +198,18 @@ export function TunnelsPanel({
   const isStarting = tunnel?.state === "starting" || startMutation.isPending;
   const isStopping = stopMutation.isPending;
 
-  // Copy URL to clipboard
+  // Copy URL to clipboard with resilient fallbacks and visual feedback
   const handleCopyUrl = async () => {
     if (!tunnel?.publicUrl) return;
-    try {
-      await copyText(tunnel.publicUrl);
-      toast.show(t("urlCopied"));
-    } catch {
-      // Ignore copy error
+    const ok = await copyToClipboard(tunnel.publicUrl);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      try {
+        toast.show(t("urlCopied"));
+      } catch {
+        // toast optional
+      }
     }
   };
 
@@ -258,19 +319,31 @@ export function TunnelsPanel({
         },
         linkWrapper: {
           flex: 1,
+          minWidth: 0,
         },
-        copyIconBtn: {
-          paddingHorizontal: 8,
+        copyBtn: {
+          paddingHorizontal: 10,
           paddingVertical: 6,
           borderRadius: 6,
-          backgroundColor: theme.colors.surface1 ?? "rgba(255,255,255,0.06)",
+          backgroundColor: "rgba(243, 128, 32, 0.12)",
           borderWidth: 1,
-          borderColor: theme.colors.border ?? "transparent",
+          borderColor: "rgba(243, 128, 32, 0.35)",
+          flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center",
+          gap: 4,
+          flexShrink: 0,
         },
-        copyIconText: {
-          fontSize: 13,
+        copyBtnSuccess: {
+          backgroundColor: "rgba(34, 197, 94, 0.15)",
+          borderColor: "rgba(34, 197, 94, 0.5)",
+        },
+        copyBtnText: {
+          color: "#F38020",
+          fontSize: 12,
+          fontWeight: "600",
+        },
+        copyBtnTextSuccess: {
+          color: "#4ade80",
         },
         label: {
           fontSize: 12,
@@ -581,11 +654,19 @@ export function TunnelsPanel({
                 />
               </View>
               <Pressable
-                style={styles.copyIconBtn}
+                style={[styles.copyBtn, copied && styles.copyBtnSuccess]}
                 onPress={handleCopyUrl}
                 accessibilityLabel={t("copyUrl")}
+                hitSlop={8}
               >
-                <Text style={styles.copyIconText}>📋</Text>
+                <Text
+                  style={[
+                    styles.copyBtnText,
+                    copied && styles.copyBtnTextSuccess,
+                  ]}
+                >
+                  {copied ? `✓ ${t("copied")}` : `📋 ${t("copyUrl")}`}
+                </Text>
               </Pressable>
             </View>
           </View>
