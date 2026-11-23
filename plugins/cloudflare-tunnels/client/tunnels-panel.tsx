@@ -14,9 +14,9 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  Linking,
 } from "react-native";
-import { useToast, copyText } from "@getpaseo/plugin/client/ui";
+import { useToast, copyText, ExternalLink, Icon } from "@getpaseo/plugin/client/ui";
+import { cloudflareIconSvg } from "./icons";
 import {
   getTunnelStatusRpc,
   detectPortsRpc,
@@ -152,13 +152,6 @@ export function TunnelsPanel({
     }
   };
 
-  // Open URL in system browser
-  const handleOpenUrl = () => {
-    if (tunnel?.publicUrl) {
-      Linking.openURL(tunnel.publicUrl);
-    }
-  };
-
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -225,45 +218,59 @@ export function TunnelsPanel({
         badgeErrorText: {
           color: "#f87171",
         },
-        urlBox: {
-          backgroundColor: "rgba(0,0,0,0.25)",
+        activeTunnelCard: {
+          backgroundColor: theme.colors.surface0,
           borderRadius: 8,
           padding: 12,
           borderWidth: 1,
-          borderColor: "#F38020",
+          borderColor: theme.colors.border ?? "#282c3a",
           marginBottom: 12,
         },
-        urlLabel: {
+        urlHeaderRow: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 8,
+        },
+        urlSectionTitle: {
           fontSize: 11,
           color: theme.colors.foregroundMuted ?? "#9ca3af",
           textTransform: "uppercase",
-          fontWeight: "600",
-          marginBottom: 4,
+          fontWeight: "700",
+          letterSpacing: 0.5,
         },
-        urlText: {
+        forwardingPill: {
+          backgroundColor: "rgba(243, 128, 32, 0.12)",
+          paddingHorizontal: 8,
+          paddingVertical: 2,
+          borderRadius: 4,
+        },
+        forwardingPillText: {
           color: "#F38020",
-          fontSize: layout.compact ? 14 : 15,
+          fontSize: 11,
           fontWeight: "600",
-          marginBottom: 8,
         },
-        urlActions: {
+        urlLinkRow: {
           flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
           gap: 8,
         },
-        urlBtn: {
+        linkWrapper: {
           flex: 1,
-          paddingVertical: 8,
-          paddingHorizontal: 12,
-          borderRadius: 6,
-          backgroundColor: "rgba(243, 128, 32, 0.15)",
-          borderWidth: 1,
-          borderColor: "rgba(243, 128, 32, 0.4)",
-          alignItems: "center",
         },
-        urlBtnText: {
-          color: "#F38020",
-          fontSize: 12,
-          fontWeight: "600",
+        copyIconBtn: {
+          paddingHorizontal: 8,
+          paddingVertical: 6,
+          borderRadius: 6,
+          backgroundColor: theme.colors.surface1 ?? "rgba(255,255,255,0.06)",
+          borderWidth: 1,
+          borderColor: theme.colors.border ?? "transparent",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        copyIconText: {
+          fontSize: 13,
         },
         label: {
           fontSize: 12,
@@ -340,21 +347,21 @@ export function TunnelsPanel({
           fontWeight: "700",
         },
         stopBtn: {
-          backgroundColor: "rgba(239, 68, 68, 0.15)",
           borderWidth: 1,
-          borderColor: "rgba(239, 68, 68, 0.4)",
-          paddingVertical: 12,
+          borderColor: "rgba(239, 68, 68, 0.45)",
+          backgroundColor: "transparent",
+          paddingVertical: 10,
           borderRadius: 8,
           alignItems: "center",
           justifyContent: "center",
           flexDirection: "row",
           gap: 8,
-          marginTop: 8,
+          marginTop: 4,
         },
         stopBtnText: {
           color: "#f87171",
-          fontSize: 14,
-          fontWeight: "700",
+          fontSize: 13,
+          fontWeight: "600",
         },
         toggleBtn: {
           paddingVertical: 8,
@@ -508,7 +515,7 @@ export function TunnelsPanel({
       <View style={styles.card}>
         <View style={styles.headerRow}>
           <View style={styles.titleRow}>
-            <Text style={{ fontSize: 18 }}>☁️</Text>
+            <Icon icon={{ svg: cloudflareIconSvg }} size={20} color="#F38020" />
             <Text style={styles.title}>
               {t("panelTitle")}
             </Text>
@@ -553,23 +560,32 @@ export function TunnelsPanel({
 
         {/* Public URL Box when Active */}
         {isRunning && tunnel?.publicUrl && (
-          <View style={styles.urlBox}>
-            <Text style={styles.urlLabel}>
-              {t("publicUrl")}
-            </Text>
-            <Text style={styles.urlText} selectable numberOfLines={1}>
-              {tunnel.publicUrl}
-            </Text>
-            <View style={styles.urlActions}>
-              <Pressable style={styles.urlBtn} onPress={handleCopyUrl}>
-                <Text style={styles.urlBtnText}>
-                  📋 {t("copyUrl")}
+          <View style={styles.activeTunnelCard}>
+            <View style={styles.urlHeaderRow}>
+              <Text style={styles.urlSectionTitle}>
+                {t("publicUrl")}
+              </Text>
+              <View style={styles.forwardingPill}>
+                <Text style={styles.forwardingPillText}>
+                  :{tunnel.localPort ?? portInput} ➔ Cloudflare
                 </Text>
-              </Pressable>
-              <Pressable style={styles.urlBtn} onPress={handleOpenUrl}>
-                <Text style={styles.urlBtnText}>
-                  🌐 {t("openInBrowser")}
-                </Text>
+              </View>
+            </View>
+
+            <View style={styles.urlLinkRow}>
+              <View style={styles.linkWrapper}>
+                <ExternalLink
+                  href={tunnel.publicUrl}
+                  label={tunnel.publicUrl}
+                  accessibilityLabel={t("publicUrl")}
+                />
+              </View>
+              <Pressable
+                style={styles.copyIconBtn}
+                onPress={handleCopyUrl}
+                accessibilityLabel={t("copyUrl")}
+              >
+                <Text style={styles.copyIconText}>📋</Text>
               </Pressable>
             </View>
           </View>
