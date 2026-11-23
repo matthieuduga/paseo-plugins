@@ -6,6 +6,7 @@ A curated collection of open-source plugins for [Paseo](https://paseo.sh), the a
 
 | Plugin | ID | Description | Installation |
 | :--- | :--- | :--- | :--- |
+| [**Cloudflare Tunnels**](./plugins/cloudflare-tunnels) | `cloudflare-tunnels` | Expose project dev servers running on your remote host or NAS with Cloudflare Tunnels (Quick Tunnels & Named Tunnels), multi-source port detection (C#, JS/TS), live request inspector, and password lock. | `paseo plugin add github:matthieuduga/paseo-plugins:plugins/cloudflare-tunnels` |
 | [**Google Antigravity Accounts**](./plugins/antigravity-accounts) | `antigravity-accounts` | Manage multiple Google Antigravity AI Pro subscriptions, switch accounts seamlessly with live quota gauges, and connect new accounts directly with an interactive OAuth wizard. | `paseo plugin add github:matthieuduga/paseo-plugins:plugins/antigravity-accounts` |
 
 ---

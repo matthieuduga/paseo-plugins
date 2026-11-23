@@ -1,0 +1,9 @@
+{
+  "id": "cloudflare-tunnels",
+  "name": "Cloudflare Tunnels",
+  "description": "Expose local development servers publicly with Cloudflare Tunnels, featuring automatic port detection, live request inspector, and optional password protection.",
+  "icon": "assets/icon.png",
+  "requirements": {
+    "paseo": ">=0.13.0"
+  }
+}

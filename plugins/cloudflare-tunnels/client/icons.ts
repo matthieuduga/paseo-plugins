@@ -1,0 +1,6 @@
+/**
+ * Official Cloudflare emblem SVG string for Paseo icon contributions.
+ */
+export const cloudflareIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+  <path d="M18.3 14.8c.1-.4.1-.7.1-1.1 0-2.8-2.3-5.1-5.1-5.1-2.4 0-4.4 1.7-4.9 3.9-.4-.3-.9-.4-1.4-.4-1.7 0-3 1.3-3 3 0 .3 0 .5.1.7C2.7 16.3 1.5 17.8 1.5 19.6c0 2.4 1.9 4.4 4.4 4.4h12.6c2.4 0 4.4-1.9 4.4-4.4 0-2.1-1.5-3.8-3.6-4.2l-1-.6z"/>
+</svg>`;
